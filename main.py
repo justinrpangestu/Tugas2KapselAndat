@@ -2,12 +2,11 @@ from fastapi import FastAPI, Depends, HTTPException, Header
 from typing import Dict
 from uuid import UUID, uuid4
 from datetime import datetime
+from contextlib import asynccontextmanager
 
 # Import schema dan semua router
-from modules.users.schema.schemas import User, UserCreate, UserUpdate
+from modules.users.schema.schemas import User
 from modules.users.routes import createUser, readUser, updateUser, deleteUser
-
-app = FastAPI(title="User Management API")
 
 # =============================================================================
 # SEMUA LOGIKA BERSAMA ADA DI SINI
@@ -35,13 +34,22 @@ def require_admin_role(role: str = Depends(get_user_role)):
     return role
 
 # =============================================================================
-# Inisialisasi Data Awal
+# LIFESPAN EVENT HANDLER (DEFINISIKAN SEBELUM APP)
 # =============================================================================
-@app.on_event("startup")
-def startup_event():
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # Kode ini berjalan saat startup
     admin_id = uuid4()
     fake_users_db[admin_id] = User(id=admin_id, username="superadmin", email="admin@example.com", role="admin")
     fake_users_db[STAFF_USER_ID] = User(id=STAFF_USER_ID, username="johndoe", email="john.doe@example.com", role="staff")
+    print("--- Server Started with Lifespan ---")
+    yield
+    # Kode di bawah yield akan berjalan saat shutdown (jika ada)
+
+# =============================================================================
+# BUAT APLIKASI FASTAPI (SETELAH LIFESPAN DIDEFINISIKAN)
+# =============================================================================
+app = FastAPI(title="User Management API", lifespan=lifespan)
 
 # =============================================================================
 # Menggabungkan Routers
