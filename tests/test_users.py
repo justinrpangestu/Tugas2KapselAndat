@@ -1,12 +1,19 @@
+# Awal file yang baru (setelah diperbaiki)
+import sys
+import os
 import pytest
 from httpx import AsyncClient
 from fastapi import status
 from uuid import uuid4
 
+# Menambahkan direktori utama proyek ke dalam path Python
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+
 # Import 'app' dari main.py untuk diuji
-# Pastikan Python bisa menemukan file main.py
-# (Mungkin perlu menambahkan __init__.py di beberapa folder)
-from main import app, fake_users_db, STAFF_USER_ID, API_KEYS
+from main import app # Tetap butuh 'app'
+from database import fake_users_db # Impor dari database.py
+from auth import STAFF_USER_ID, API_KEYS # Impor dari auth.py
+
 
 # --- Fixtures untuk Setup Testing ---
 
