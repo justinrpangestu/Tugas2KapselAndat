@@ -1,5 +1,5 @@
 import re
-from datetime import datetime
+from datetime import datetime, UTC
 from enum import Enum
 from typing import Optional
 from uuid import UUID, uuid4
@@ -20,16 +20,11 @@ class UserCreate(UserBase):
     @field_validator('password')
     @classmethod
     def validate_password(cls, v):
-        if not re.search(r"[A-Z]", v):
-            raise ValueError("Password must contain at least one uppercase letter")
-        if not re.search(r"[a-z]", v):
-            raise ValueError("Password must contain at least one lowercase letter")
-        if not re.search(r"[0-9]", v):
-            raise ValueError("Password must contain at least one digit")
-        if not re.search(r"[!@]", v):
-            raise ValueError("Password must contain at least one of the special characters: !@")
-        if not re.match(r"^[a-zA-Z0-9!@]+$", v):
-            raise ValueError("Password contains invalid characters. Only alphanumeric and !@ are allowed.")
+        if not re.search(r"[A-Z]", v): raise ValueError("Password needs an uppercase letter")
+        if not re.search(r"[a-z]", v): raise ValueError("Password needs a lowercase letter")
+        if not re.search(r"[0-9]", v): raise ValueError("Password needs a digit")
+        if not re.search(r"[!@]", v): raise ValueError("Password needs one of !@")
+        if not re.match(r"^[a-zA-Z0-9!@]+$", v): raise ValueError("Password has invalid characters")
         return v
 
 class UserUpdate(BaseModel):
@@ -39,7 +34,6 @@ class UserUpdate(BaseModel):
 
 class User(UserBase):
     id: UUID = Field(default_factory=uuid4)
-    created_at: datetime = Field(default_factory=datetime.utcnow)
-    updated_at: datetime = Field(default_factory=datetime.utcnow)
-    
+    created_at: datetime = Field(default_factory=lambda: datetime.now(UTC))
+    updated_at: datetime = Field(default_factory=lambda: datetime.now(UTC))
     model_config = ConfigDict(from_attributes=True)
